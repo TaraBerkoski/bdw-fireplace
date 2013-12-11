@@ -1,0 +1,97 @@
+<html>
+	<head>
+		<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+		<script>
+
+			var passedcheck=0;
+
+			navigator.webkitGetUserMedia(
+			{audio:true}, 
+
+			function(stream){
+		    	audioContext = new webkitAudioContext();
+			    analyser = audioContext.createAnalyser();
+			    microphone = audioContext.createMediaStreamSource(stream);
+			    javascriptNode = audioContext.createJavaScriptNode(2048, 1, 1);
+
+			    analyser.smoothingTimeConstant = 0.3;
+			    analyser.fftSize = 1024;
+
+			    microphone.connect(analyser);
+			    analyser.connect(javascriptNode);
+			    javascriptNode.connect(audioContext.destination);
+
+			    setInterval(doAudioCheck,1000);
+			});
+
+
+			testInterval= function(){
+				console.log("I HAPPEN");
+			}
+
+
+			var currentAudioRange = "off";
+			doAudioCheck = function() {
+			        var array =  new Uint8Array(analyser.frequencyBinCount);
+			        analyser.getByteFrequencyData(array);
+			        var values = 0;
+
+			        var length = array.length;
+			        for (var i = 0; i < length; i++) {
+			            values += (array[i]);
+			        }
+
+			        var average = (values) / length;
+
+			        console.log(average);
+            
+
+					if (average>100) {
+						if(currentAudioRange!="fast"){
+							 document.getElementById("video").playbackRate=6;
+							 document.getElementById("video").play();
+						}
+						currentAudioRange = "fast";
+					} else if (average>80) {
+						if(currentAudioRange!="medium-high"){
+							 document.getElementById("video").playbackRate=3;
+							 document.getElementById("video").play();
+						}
+						currentAudioRange = "medium-high";
+					
+					}  else if (average>50) {
+						if(currentAudioRange!="medium"){
+							 document.getElementById("video").playbackRate=1;
+							 document.getElementById("video").play();
+						}
+						currentAudioRange = "medium";
+
+					} else if (average>30) {
+						if(currentAudioRange!="medium-low"){
+							 document.getElementById("video").playbackRate=.5;
+							 document.getElementById("video").play();
+						}
+						currentAudioRange = "medium-low";
+					
+					} else {
+						if(currentAudioRange!="slow"){
+							 document.getElementById("video").playbackRate=0.1;
+							 document.getElementById("video").play();
+						}
+						currentAudioRange = "slow";
+					}
+			}
+		</script>
+
+		<style>
+			body {background:#262626;margin:0;padding:0;}
+			video {width:960px;height:540px;position:absolute;top:0px;left:0px;}
+		</style>
+
+	</head>
+	<body>
+		<video autoplay loop id="video">
+			<source src="fireplace-medium.m4v" />
+		</video>
+	</body>
+</html>
